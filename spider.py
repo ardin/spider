@@ -79,6 +79,24 @@ def save_report(info=False, summary=False):
                     if int(results[k]['code']) == key:
                         f.write("- " + str(k) + " " + str(results[k]['code']) + "\n")
 
+    # slow responces
+    header = 0
+    for k in results:
+        if results[k]['time'] >= 1 and results[k]['time'] < 2:
+            if header == 0:
+                f.write( "\nSlow responces (1-2s):\n")                                                                                  
+                header = 1
+            f.write("- " + str(k) + " " + str(results[k]['time']) + "s\n")
+
+    # critical responces
+    header = 0
+    for k in results:
+        if results[k]['time'] > 2:
+            if header == 0:
+                f.write( "\nVery slow responces (more than 2s):\n")
+                header = 1
+            f.write("- " + str(k) + " " + str(results[k]['time']) + "s\n")
+
     f.flush()
     f.close()
 
@@ -196,7 +214,7 @@ def search_links(url):
         soup_time = round(time.time()-start_soup_time,4)
 
         # save after x requests
-        if checked%10 == 0:
+        if checked%100 == 0:
             save_report(info=True)
 
         function_time = round(time.time()-stime,4)

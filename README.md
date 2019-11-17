@@ -3,6 +3,16 @@
 ## description
 Linear spider checks website and searching error pages (e.g. http 500) and reports slow loading pages.
 
+## installation
+
+```
+$ git clone https://github.com/ardin/spider.git
+$ cd spider
+$ virtualenv -p /usr/bin/python3 venv
+$ source ./venv/bin/activate 
+$ install -r requirements.txt
+```
+
 ## usage
 
 <pre>

@@ -12,29 +12,28 @@ import signal
 import sys
 import urllib3
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
-
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+debug = False
+results = {}
+queue = 0
+checked = 0
+user_agent = "Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.1.4) Gecko/20070705 Firefox/2.0.0.4"
+status_r = {}
+now = datetime.today().strftime('%Y-%m-%d_%H')
 
-debug=False
-results={}
-queue=0
-checked=0
-user_agent="Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.1.4) Gecko/20070705 Firefox/2.0.0.4"
-status_r={}
-now=datetime.today().strftime('%Y-%m-%d_%H')
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    ENDC = '\033[0m'
+
 
 def validate_url(url):
     if not validators.url(url):
@@ -45,7 +44,7 @@ def validate_url(url):
 def save_report(info=False, summary=False):
 
     if info:
-        print("INFO: all results: {0}, checked: {1}, queue: {2}" .format( str(len(results)), str(checked), str(queue)))
+        print("INFO: all results: {0}, checked: {1}, queue: {2}" .format(str(len(results)), str(checked), str(queue)))
 
     # make directories
     report_txt = workdir + "report.txt"
@@ -81,25 +80,23 @@ def save_report(info=False, summary=False):
                     if int(results[k]['code']) == key:
                         f.write("- " + str(k) + " " + str(results[k]['code']) + "\n")
 
-    # slow responces
+    # slow responses
     header = 0
     for k in results:
         if results[k]['time'] >= 1 and results[k]['time'] < 2:
             if header == 0:
-                f.write( "\nSlow responces (1-2s):\n")
+                f.write( "\nSlow responses (1-2s):\n")
                 header = 1
             f.write("- " + str(k) + " " + str(results[k]['time']) + "s\n")
 
-    # critical responces
+    # critical responses
     header = 0
     for k in results:
         if results[k]['time'] > 2:
             if header == 0:
-                f.write( "\nVery slow responces (more than 2s):\n")
+                f.write( "\nVery slow responses (more than 2s):\n")
                 header = 1
             f.write("- " + str(k) + " " + str(results[k]['time']) + "s\n")
-
-
     f.flush()
     f.close()
 
@@ -120,8 +117,7 @@ def search_links(url):
     checked = checked + 1
 
     stime = time.time()
-    if validators.url(url) and results[url]['code']==0:
-
+    if validators.url(url) and results[url]['code'] == 0:
         start_rtime = time.time()
 
     u = urllib3.util.parse_url(url)
@@ -140,7 +136,7 @@ def search_links(url):
         else:
             status_r[598] = status_r[598] + 1
 
-        results[url] = { 'code': '598', 'time': 0, 'message': str(e) }
+        results[url] = {'code': '598', 'time': 0, 'message': str(e)}
         return False
 
     request_time = round(time.time()-start_rtime,4)
@@ -154,7 +150,7 @@ def search_links(url):
         color = bcolors.FAIL
 
     # show message
-    print (color + "+ {0} {1} {2}s" . format(url,r.status_code,exec_time) + bcolors.ENDC)
+    print(color + "+ {0} {1} {2}s" . format(url, r.status_code, exec_time) + bcolors.ENDC)
 
     start_stime = time.time()
     if r.status_code not in status_r:
@@ -164,21 +160,16 @@ def search_links(url):
 
     html_page = r.text
 
-    results[url] = { 'time': round(time.time()-start_time,2), 'code': r.status_code, 'header': r.headers }
-    status_time = round(time.time()-start_stime,4)
+    results[url] = {'time': round(time.time()-start_time, 2), 'code': r.status_code, 'header': r.headers }
+    status_time = round(time.time()-start_stime, 4)
 
     start_soup_time = time.time()
-    soup = BeautifulSoup(html_page.encode('ascii','ignore'), 'html.parser')
-    soup_time_2 = round(time.time()-start_soup_time,4)
+    soup = BeautifulSoup(html_page.encode('ascii', 'ignore'), 'html.parser')
+    soup_time_2 = round(time.time()-start_soup_time, 4)
 
     for link_r in soup.findAll('a'):
-
-        start_soup_getlink_time = time.time()
         link = link_r.get('href')
-        soup_getlink_time = round(time.time()-start_soup_getlink_time,4)
-
         search = False
-
         start_soup_search_time = time.time()
         try:
             if re.search(r'^'+url,str(link)):
@@ -202,8 +193,8 @@ def search_links(url):
             if link not in results:
 
                 if validators.url(link):
-                    results[link] = { 'code': 0, 'time': 0 }
-                    queue+=1
+                    results[link] = {'code': 0, 'time': 0}
+                    queue += 1
 
                 soup_queue_append_time = round(time.time()-start_soup_queue_time,4)
                 if debug:
@@ -214,45 +205,47 @@ def search_links(url):
     del soup
     del html_page
 
-    soup_time = round(time.time()-start_soup_time,4)
+    soup_time = round(time.time()-start_soup_time, 4)
 
     # save after x requests
-    if checked%10 == 0:
+    if checked%100 == 0:
         save_report(info=True)
 
-    function_time = round(time.time()-stime,4)
+    function_time = round(time.time()-stime, 4)
     if debug:
-      print("DEBUG: function time: {0}" . format(function_time))
-      print("DEBUG: request time: {0}" . format(request_time))
-      print("DEBUG: status time: {0}" . format(status_time))
-      print("DEBUG: soup time: {0}" . format(soup_time))
-      print("DEBUG: soup time 2: {0}" . format(soup_time_2))
-      print("\n")
+        print("DEBUG: function time: {0}" . format(function_time))
+        print("DEBUG: request time: {0}" . format(request_time))
+        print("DEBUG: status time: {0}" . format(status_time))
+        print("DEBUG: soup time: {0}" . format(soup_time))
+        print("DEBUG: soup time 2: {0}" . format(soup_time_2))
+        print("\n")
+
 
 def signal_handler(signal, frame):
     save_report(summary=True)
     sys.exit(0)
 
 
-parser = argparse.ArgumentParser(description='Linear Spider')
-parser.add_argument('url', help='Checked site')
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Linear Spider')
+    parser.add_argument('url', help='Checked site')
+    args = parser.parse_args()
 
-base_url = url = args.url
-validate_url(url)
-signal.signal(signal.SIGINT, signal_handler)
+    base_url = url = args.url
+    validate_url(url)
+    signal.signal(signal.SIGINT, signal_handler)
 
-u = urllib3.util.parse_url(url)
-workdir = os.getenv("HOME") + "/spider/" + u.netloc + "/" + now + "/"
+    u = urllib3.util.parse_url(url)
+    workdir = os.getenv("HOME") + "/spider/" + u.netloc + "/" + now + "/"
 
-# first run
-if len(results)==0:
-    results[url] = { 'code': 0, 'time': 0 }
-    queue=1
+    # first run
+    if len(results) == 0:
+        results[url] = {'code': 0, 'time': 0}
+        queue = 1
 
-while queue>0:
-  for url in list(results):
-    if results[url]['code']==0:
-      search_links(url)
+    while queue > 0:
+        for url in list(results):
+            if results[url]['code'] == 0:
+                search_links(url)
 
-save_report(info=False, summary=True)
+    save_report(info=False, summary=True)

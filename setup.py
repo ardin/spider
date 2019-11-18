@@ -8,7 +8,7 @@ setup(
   author = 'Piotr Wasilewski',
   author_email = 'piotr@wasilewski.net.pl',
   url = 'https://github.com/ardin/linear-spider',
-  download_url = 'https://github.com/ardin/linear-spider/archive/pypi-0_1_3.tar.gz',
+  download_url = 'https://github.com/ardin/linear-spider/archive/0.1.tar.gz',
   keywords = ['spider', 'test page', 'speed test'],
   install_requires=[
           'validators',

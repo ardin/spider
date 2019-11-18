@@ -1,23 +1,21 @@
-# spider
+# Linear spider
 
-## description
-Linear spider checks website and searching error pages (e.g. http 500) and reports slow loading pages.
+## Overview
+Linear spider checks website, searching error pages (e.g. http 500) and reports slow loading pages.
 
-## installation
 
-```
-$ git clone https://github.com/ardin/spider.git
-$ cd spider
-$ virtualenv -p /usr/bin/python3 venv
-$ source ./venv/bin/activate 
-$ install -r requirements.txt
+### Getting it
+
+To download linear-spider, either fork this github repo or simply use Pypi via pip.
+```sh
+$ pip install linear-spider
 ```
 
-## usage
+### Using it
 
 <pre>
-$ ./spider.py -h
-usage: spider.py [-h] url
+$ linear-spider -h
+usage: linear-spider [-h] url
 
 Linear Spider
 
@@ -28,12 +26,12 @@ optional arguments:
   -h, --help  show this help message and exit
 </pre>
 
-## example output
+## Example output
 
 Below is example working program (interrupted after few second).
 
 <pre>
-$ ./spider.py https://www.linkedin.com
+$ linear-spider https://www.linkedin.com
 + https://www.linkedin.com 200 0.62s
 + https://www.linkedin.com/psettings/guest-controls?trk=uno-reg-guest-home-guest-controls 200 0.73s
 + https://www.linkedin.com/psettings/guest-email-unsubscribe?trk=hb_ft_gunsub 200 0.54s

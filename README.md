@@ -8,7 +8,7 @@ Linear spider checks website, searching error pages (e.g. http 500) and reports 
 
 To download linear-spider, either fork this github repo or simply use Pypi via pip.
 ```sh
-$ pip install linear-spider
+$ pip3 install linear-spider
 ```
 
 ### Using it

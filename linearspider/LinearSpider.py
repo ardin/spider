@@ -3,7 +3,7 @@
 import argparse
 import validators
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, SoupStrainer
 import re
 import time
 import os
@@ -188,7 +188,8 @@ class LinearSpider(object):
         status_time = round(time.time()-start_stime, 4)
 
         start_soup_time = time.time()
-        soup = BeautifulSoup(html_page.encode('ascii', 'ignore'), 'html.parser')
+        strainer = SoupStrainer('a')
+        soup = BeautifulSoup(html_page.encode('ascii', 'ignore'), 'html.parser', parse_only=strainer)
         soup_time_2 = round(time.time()-start_soup_time, 4)
 
         for link_r in soup.findAll('a'):

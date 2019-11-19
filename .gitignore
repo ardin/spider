@@ -1,3 +1,5 @@
 venv
 *.bkp*
 .idea
+MANIFEST
+dist

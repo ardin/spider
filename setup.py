@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'linear-spider',
   packages = ['linearspider'],
-  version = '0.1',
+  version = '0.1.1',
   license='MIT',
   description = 'Linear spider checks website, searching error pages (e.g. http 500) and reports slow loading pages.',
   author = 'Piotr Wasilewski',

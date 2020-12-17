@@ -4,3 +4,4 @@ from linearspider.LinearSpider import LinearSpider
 
 if __name__ == "__main__":
     spider = LinearSpider()
+    

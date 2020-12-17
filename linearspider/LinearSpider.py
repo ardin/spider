@@ -11,8 +11,10 @@ from datetime import datetime
 import signal
 import sys
 import urllib3
+from base64 import b64encode
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -31,6 +33,10 @@ class LinearSpider(object):
     def __init__(self):
 
         parser = argparse.ArgumentParser(description='Linear Spider')
+        parser.add_argument('-H', '--header', action='append', nargs='*', help='send this HTTP header '
+                                                                               '(you can specify several)')
+        parser.add_argument('--debug', action="store_true")
+        parser.add_argument('-C', '--credentials', help='provide credentials for basic authentication (user:pass)')
         parser.add_argument('url', help='Checked site')
         args = parser.parse_args()
 
@@ -38,12 +44,44 @@ class LinearSpider(object):
         self.results = {}
         self.queue = 0
         self.checked = 0
-        self.user_agent = "Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.1.4) Gecko/20070705 Firefox/2.0.0.4"
         self.status_r = {}
         self.now = datetime.today().strftime('%Y-%m-%d_%H')
-
         self.url = args.url
         self.base_url = args.url
+        self.headers = {}
+
+        # set debug
+        self.debug = args.debug
+
+        # set headers
+        if args.header:
+            for h in args.header:
+                n=h[0].split(':')
+                if len(n) == 2:
+                    k = n[0].strip()
+                    if n[0].lower().strip() == 'user-agent':    # overwrite if needed
+                        k = 'User-Agent'
+                    v = n[1].strip()
+
+                    self.headers[k] = v
+                    if self.debug:
+                        print('DEBUG: setting header: "%s: %s"' % (k, v))
+
+        # set default user-agent
+        if 'User-Agent' not in self.headers:
+            self.headers['User-Agent'] = 'Mozilla/5.0 (X11; U; Linux i686; pl; rv:1.8.1.4) Gecko/20070705 ' \
+                                         'Firefox/2.0.0.4 (linear)'
+
+        # set credentials
+        if args.credentials:
+            credentials = args.credentials.split(':')
+            if len(credentials) == 2:
+                user_pass = b64encode(args.credentials.encode('utf-8')).decode("ascii")
+                self.headers['Authorization'] = 'Basic %s' % user_pass
+                if self.debug:
+                    print('DEBUG: setting header "Authorization: Basic %s"' % user_pass)
+
+        # check url
         self.validate_url(self.url)
 
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -62,6 +100,9 @@ class LinearSpider(object):
                     self.search_links(url)
 
         self.save_report(info=False, summary=True)
+
+    def test(self,t):
+        print(t)
 
     def validate_url(self, url):
         if not validators.url(url):
@@ -146,11 +187,10 @@ class LinearSpider(object):
 
         u = urllib3.util.parse_url(url)
         host = u.scheme + "://" + u.netloc
-        headers = {'user-agent': self.user_agent}
         try:
             start_time = time.time()
             s = requests.Session()
-            r = s.get(url, headers=headers, verify=False, timeout=5)
+            r = s.get(url, headers=self.headers, verify=False, timeout=5)
             exec_time = round(time.time()-start_time,2)
 
         except Exception as e:
